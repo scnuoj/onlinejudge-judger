@@ -52,7 +52,7 @@ class LocalQueue(object):
         self.__queue = []
 
     def put(self, item):
-        insert = Flase
+        insert = False
         while insert is False:
             with self.__lock:
                 if len(self.__queue) < self.__len_limit:
