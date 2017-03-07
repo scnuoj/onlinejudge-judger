@@ -1,4 +1,6 @@
 import redis
+from threading import Lock
+from time import sleep
 
 
 class RedisQueue(object):
@@ -37,3 +39,30 @@ class RedisQueue(object):
     def get_nowait(self):
         """Equivalent to get(False)."""
         return self.get(False)
+
+
+class LocalQueue(object):
+    """
+    Simple Thread Safety Queue
+    """
+
+    def __init__(self, lock=None, len_limit=10):
+        self.__lock = lock or Lock()
+        self.__len_limit = len_limit
+        self.__queue = []
+
+    def put(self, item):
+        insert = Flase
+        while insert is False:
+            with self.__lock:
+                if len(self.__queue) < self.__len_limit:
+                    self.__queue.append(item)
+                    insert = True
+
+            sleep(0.5)
+
+    def get(self):
+
+        with self.__lock:
+            return self.__queue.pop()
+
