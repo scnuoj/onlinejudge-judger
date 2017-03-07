@@ -23,3 +23,5 @@ class ConfigManager(object):
         "password": "",
         "database": "judge",
     }
+
+    thread_num = 5

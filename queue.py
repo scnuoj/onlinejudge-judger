@@ -65,4 +65,3 @@ class LocalQueue(object):
 
         with self.__lock:
             return self.__queue.pop()
-
