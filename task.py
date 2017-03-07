@@ -1,9 +1,8 @@
-from queue import RedisQueue, LocalQueue
+from simple_queue import RedisQueue, LocalQueue
 from copy import deepcopy
 from config import ConfigManager
 from pprint import pprint
 import threading
-
 
 class Task(object):
 
@@ -69,7 +68,7 @@ class TaskManager(object):
         print("Start Listening Judge Queue ....")
         try:
             while True:
-                task = self.judge_queue.get()
+                task = self.__judge_queue.get()
                 pprint(task)
 
         except KeyboardInterrupt:
