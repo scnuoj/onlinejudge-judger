@@ -62,6 +62,15 @@ class LocalQueue(object):
             sleep(0.5)
 
     def get(self):
+        done = False
+        ret = None
+        while done is False:
 
-        with self.__lock:
-            return self.__queue.pop()
+            with self.__lock:
+                if len(self.__queue) > 0:
+                    ret = self.__queue.pop()
+                    done = True
+
+            sleep(0.1)
+
+        return ret
