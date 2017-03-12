@@ -3,32 +3,76 @@ from copy import deepcopy
 from config import ConfigManager
 from pprint import pprint
 import threading
-
+from models import Problem, Submission
+import os
+from json import loads
+from time import sleep
 class Task(object):
 
-    def __init__(self, task_id, judge_file_content):
+    def __init__(self, task_id):
         self.task_id = task_id
-        self.judge_file_content = judge_file_content
 
-    def __load_task_information(self):
+    def __load_problem_information(self):
+        """
+        load problem limit information
+        """
 
-        pass
+        self.__limit = {
+            "max_cpu_time": self.__problem.max_cpu_time,
+            "max_real_time": self.__problem.max_real_time,
+            "max_memory": self.__problem.max_memory,
+            "max_process_number": self.__problem.max_process_number,
+            "max_output_size": self.__problem.max_output_size,
+        }
 
     def judge(self):
 
-        pass
+        return self.__judge()
 
     def __write_judge_file(self):
+        """
+        write submission file, sample input file, samile output file to {self.task_id} path
+        """
 
-        pass
+        os.mkdir(self.task_id)
+        with open("{}/{}".format(self.task_id, "user_judge_file"), "w") as f:
+            f.write(self.__submission.code)
+        with open("{}/{}".format(self.task_id, "sample_input"), "w") as f:
+            f.write(self.__problem.sample_input)
+        with open("{}/{}".format(self.task_id, "sample_output"), "w") as f:
+            f.write(self.__problem.sample_output)
+
 
     def __judge(self):
 
-        pass
+        try:
+            self.__submission = Submission.get(id=self.task_id)
+            self.__problem = Problem.get(id=self.__submission.problem_id)
 
-    def __load_result(self):
+        except:
+            return None
 
-        pass
+        self.__load_problem_information()
+        self.__write_judge_file()
+
+        # _judger.run()
+
+        sleep(10)
+        self.__clean()
+
+        return True
+
+    def __clean(self):
+
+        """
+        remove submission file
+        :return:
+        """
+
+        dir = os.listdir(self.task_id)
+        for file in dir:
+            os.remove("{}/{}".format(self.task_id, file))
+        os.rmdir(self.task_id)
 
 
 class TaskManager(object):
@@ -52,9 +96,19 @@ class TaskManager(object):
 
         self.__threadpool = []
 
+        self.__sub_thread_loop = True
+
     def __subprocess(self):
 
-        pass
+        while self.__sub_thread_loop:
+            task = self.__local_queue.get()
+            task_judger = Task(task)
+            task_ret = task_judger.judge()
+
+            if task_ret:
+                self.__result_queue.put("{} OK".format(task))
+            else:
+                self.__result_queue.put("{} ERROR".format(task))
 
     def __thread_generator(self):
         self.__threadpool.append(threading.Thread(target=self.__subprocess))
@@ -68,9 +122,9 @@ class TaskManager(object):
         print("Start Listening Judge Queue ....")
         try:
             while True:
-                task = self.__judge_queue.get()
-                pprint(task)
-
+                task = loads(self.__judge_queue.get())
+                self.__local_queue.put(task['payload']['submissionId'])
+                print("get task {}".format(task['payload']['submissionId']))
         except KeyboardInterrupt:
             print("Waiting Jobs in Sub Thread Done ....")
             for one_thread in self.__threadpool:
