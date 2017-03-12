@@ -1,12 +1,13 @@
 from simple_queue import RedisQueue, LocalQueue
 from copy import deepcopy
 from config import ConfigManager
-from pprint import pprint
 import threading
 from models import Problem, Submission
 import os
 from json import loads
 from time import sleep
+
+
 class Task(object):
 
     def __init__(self, task_id):
@@ -31,7 +32,7 @@ class Task(object):
 
     def __write_judge_file(self):
         """
-        write submission file, sample input file, samile output file to {self.task_id} path
+        write submission file, sample input file, sample output file to {self.task_id} path
         """
 
         os.mkdir(self.task_id)
@@ -41,7 +42,6 @@ class Task(object):
             f.write(self.__problem.sample_input)
         with open("{}/{}".format(self.task_id, "sample_output"), "w") as f:
             f.write(self.__problem.sample_output)
-
 
     def __judge(self):
 
@@ -66,11 +66,10 @@ class Task(object):
 
         """
         remove submission file
-        :return:
         """
 
-        dir = os.listdir(self.task_id)
-        for file in dir:
+        submission_dir = os.listdir(self.task_id)
+        for file in submission_dir:
             os.remove("{}/{}".format(self.task_id, file))
         os.rmdir(self.task_id)
 

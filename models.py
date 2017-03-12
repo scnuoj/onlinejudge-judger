@@ -1,6 +1,4 @@
 from peewee import *
-from pprint import  pprint
-
 
 database_proxy = Proxy()
 
